@@ -1,11 +1,12 @@
 import { 
-  JsonController, Authorized, CurrentUser, Post, Param, BadRequestError, HttpCode, NotFoundError, ForbiddenError, Get, Patch 
+  JsonController, Authorized, CurrentUser, Post, Param, BadRequestError, HttpCode, NotFoundError, ForbiddenError, Get, Patch, Body 
 } from 'routing-controllers'
 import User from '../users/entity'
 import { Game, Player } from './entities'
 // import {calculateWinner, finished} from './logic'
 // import { Validate } from 'class-validator'
 import {io} from '../index'
+import {gameData}  from './gamedata'
 
 // class GameUpdate {
 
@@ -80,7 +81,7 @@ export default class GameController {
   async updateGame(
     @CurrentUser() user: User,
     @Param('id') gameId: number,
-    // @Body() update: JSON
+    @Body() update: Object
   ) {
     const game = await Game.findOneById(gameId)
     if (!game) throw new NotFoundError(`Game does not exist`)
@@ -89,6 +90,8 @@ export default class GameController {
 
     if (!player) throw new ForbiddenError(`You are not part of this game`)
     if (game.status !== 'started') throw new BadRequestError(`The game is not started yet`)   
+    console.log("Hey there, I'm an update", update)
+    console.log("Hey there, I'm gameData", gameData.position)
 
     // const winner = calculateWinner(update.board)
     // if (winner) {
@@ -106,7 +109,11 @@ export default class GameController {
     
     io.emit('action', {
       type: 'UPDATE_GAME',
-      payload: game
+      payload: {
+        id: gameId,
+        ...gameData.position,
+        ...update
+      }
     })
     return game
   }
