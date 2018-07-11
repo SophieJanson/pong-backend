@@ -50,6 +50,9 @@ export class Player extends BaseEntity {
   @Column()
   userId: number
 
-  @Column('char', {length: 1})
-  symbol: Symbol
+  @Column('text')
+  paddle: string
+
+  @Column('integer')
+  score: number
 }
