@@ -91,8 +91,14 @@ export default class GameController {
     if (!player) throw new ForbiddenError(`You are not part of this game`)
     if (game.status !== 'started') throw new BadRequestError(`The game is not started yet`)   
     console.log("Hey there, I'm an update", update)
-    console.log("Hey there, I'm gameData", gameData.position)
+    console.log("Hey there, I'm gameData", gameData)
+    let newGameData: Object = gameData
+    console.log("Hey there, I'm gameData", newGameData)
 
+    newGameData= {
+      ...gameData,
+      ...update
+    }
     // const winner = calculateWinner(update.board)
     // if (winner) {
     //   game.winner = winner
@@ -111,8 +117,7 @@ export default class GameController {
       type: 'UPDATE_GAME',
       payload: {
         id: gameId,
-        ...gameData.position,
-        ...update
+        ...newGameData
       }
     })
     return game
