@@ -18,7 +18,7 @@ import {gameData}  from './gamedata'
 
 @JsonController()
 export default class GameController {
-
+  newGameData: Object = gameData
   @Authorized()
   @Post('/games')
   @HttpCode(201)
@@ -40,8 +40,11 @@ export default class GameController {
       type: 'ADD_GAME',
       payload: game
     })
-
-    return game
+    this.newGameData = gameData
+    return ({
+      ...game,
+      position: this.newGameData
+    })
   }
 
   @Authorized()
@@ -72,7 +75,6 @@ export default class GameController {
 
     return player
   }
-  newGameData: Object = gameData
 
   @Authorized()
   // the reason that we're using patch here is because this request is not idempotent
@@ -91,13 +93,11 @@ export default class GameController {
 
     if (!player) throw new ForbiddenError(`You are not part of this game`)
     if (game.status !== 'started') throw new BadRequestError(`The game is not started yet`)   
-    console.log("Hey there, I'm an update", update)
-    console.log("Hey there, I'm gameData", this.newGameData)
-
     this.newGameData= {
       ...this.newGameData,
       ...update
     }
+
     // const winner = calculateWinner(update.board)
     // if (winner) {
     //   game.winner = winner
