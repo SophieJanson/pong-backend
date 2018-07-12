@@ -66,12 +66,13 @@ export default class GameController {
     }).save()
 
     io.emit('action', {
-      type: 'UPDATE_GAME',
+      type: 'UPDATE_GAME_STATUS',
       payload: await Game.findOneById(game.id)
     })
 
     return player
   }
+  newGameData: Object = gameData
 
   @Authorized()
   // the reason that we're using patch here is because this request is not idempotent
@@ -91,12 +92,10 @@ export default class GameController {
     if (!player) throw new ForbiddenError(`You are not part of this game`)
     if (game.status !== 'started') throw new BadRequestError(`The game is not started yet`)   
     console.log("Hey there, I'm an update", update)
-    console.log("Hey there, I'm gameData", gameData)
-    let newGameData: Object = gameData
-    console.log("Hey there, I'm gameData", newGameData)
+    console.log("Hey there, I'm gameData", this.newGameData)
 
-    newGameData= {
-      ...gameData,
+    this.newGameData= {
+      ...this.newGameData,
       ...update
     }
     // const winner = calculateWinner(update.board)
@@ -117,7 +116,7 @@ export default class GameController {
       type: 'UPDATE_GAME',
       payload: {
         id: gameId,
-        ...newGameData
+        ...this.newGameData
       }
     })
     return game
