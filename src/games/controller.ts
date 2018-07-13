@@ -104,7 +104,7 @@ export default class GameController {
     }
     if(player.score === 3 ) {
       game.status = 'finished'
-      //game.winner = player.userId
+      game.winner = player.userId
       await game.save()
 
       io.emit('action', {
@@ -141,9 +141,9 @@ export default class GameController {
   ) {
     const games = await Game.find({where: {players: {userId: user.id}}})
     const resGames = games
-      // .filter(game => {
-      //   return (game.players.length < 2 || game.players.filter(player => player.userId === user.id).length === 1)
-      // })
+      .filter(game => {
+        return (game.players.length < 2 || game.players.filter(player => player.userId === user.id).length === 1)
+      })
     return await resGames
   }
 }
