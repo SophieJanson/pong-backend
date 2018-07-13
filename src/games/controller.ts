@@ -3,18 +3,10 @@ import {
 } from 'routing-controllers'
 import User from '../users/entity'
 import { Game, Player } from './entities'
-// import {calculateWinner, finished} from './logic'
+//import {finished} from './logic'
 // import { Validate } from 'class-validator'
 import {io} from '../index'
 import {gameData}  from './gamedata'
-
-// class GameUpdate {
-
-//   @Validate(IsBoard, {
-//     message: 'Not a valid board'
-//   })
-//   board: Board
-// }
 
 @JsonController()
 export default class GameController {
@@ -90,7 +82,6 @@ export default class GameController {
     if (!game) throw new NotFoundError(`Game does not exist`)
 
     const player = await Player.findOne({ user, game })
-    console.log("UPDATE", update)
     if (!player) throw new ForbiddenError(`You are not part of this game`)
     if (game.status !== 'started') throw new BadRequestError(`The game is not started yet`) 
     if(update['vx'] || update['vy'] || update['left'] || update['right']) {
@@ -111,9 +102,19 @@ export default class GameController {
     if(update['score'] && update['score'] === player.paddle) {
       await player.score ++
     }
+    if(player.score === 3) {
+      game.status = 'finished'
+      game.winner = player.userId
+      await game.save()
+
+      io.emit('action', {
+        type: 'UPDATE_GAME_STATUS',
+        payload: await Game.findOneById(game.id)
+      })
+      return game
+    }
 
     await player.save()
-    await game.save()
 
     io.emit('action', {
       type: 'UPDATE_GAME_SCORE',
@@ -122,19 +123,6 @@ export default class GameController {
         players: game.players 
       }
     })
-
-    // const winner = calculateWinner(update.board)
-    // if (winner) {
-    //   game.winner = winner
-    //   game.status = 'finished'
-    // }
-    // else if (finished(update.board)) {
-    //   game.status = 'finished'
-    // }
-    // else {
-    //   // game.turn = player.symbol === 'x' ? 'o' : 'x'
-    // }
-    // game.board = update.board
     return game
   }
 
@@ -154,7 +142,6 @@ export default class GameController {
     const games = await Game.find({where: {players: {userId: user.id}}})
     const resGames = games
       .filter(game => {
-        console.log("game", game)
         return (game.players.length < 2 || game.players.filter(player => player.userId === user.id).length === 1)
       })
     return await resGames

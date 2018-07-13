@@ -55,3 +55,8 @@
 // export const score = (playerId) => {
 //   return 
 // }
+
+// export const finished = (game) => {
+//   return !!game.players
+//     .find(player => player.score === 5)
+// }
