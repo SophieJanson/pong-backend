@@ -27,7 +27,7 @@ class CustomNamingStrategy extends DefaultNamingStrategy implements NamingStrate
 export default () =>
   createConnection({
     type: "postgres",
-    url: process.env.DATABASE_URL || 'postgres://tbsctgmtukvvdn:e128fda9f36dc2998a9d902b265bada54b598d2c5815f265029e1d8d38db6f9f@ec2-54-247-79-32.eu-west-1.compute.amazonaws.com:5432/dcccgagoi0h8og',
+    url: process.env.DATABASE_URL || 'postgres://postgres:supersecret@localhost:5432/postgres',
     entities: [
       User,
       Player,
