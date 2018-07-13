@@ -132,8 +132,16 @@ export default class GameController {
 
   @Authorized()
   @Get('/games')
-  getGames() {
-    return Game.find()
+  async getGames(
+    @CurrentUser() user: User
+  ) {
+    const games = await Game.find({where: {players: {userId: user.id}}})
+    const resGames = games
+      .filter(game => {
+        console.log("game", game)
+        return (game.players.length < 2 || game.players.filter(player => player.userId === user.id).length === 1)
+      })
+    return await resGames
   }
 }
 
