@@ -90,7 +90,7 @@ export default class GameController {
     if (!game) throw new NotFoundError(`Game does not exist`)
 
     const player = await Player.findOne({ user, game })
-    console.log("PLAYER", player)
+    console.log("UPDATE", update)
     if (!player) throw new ForbiddenError(`You are not part of this game`)
     if (game.status !== 'started') throw new BadRequestError(`The game is not started yet`) 
     if(update['vx'] || update['vy'] || update['left'] || update['right']) {
@@ -100,7 +100,7 @@ export default class GameController {
       }
 
       io.emit('action', {
-        type: 'UPDATE_GAME',
+        type: 'UPDATE_GAME_POSITION',
         payload: {
           id: gameId,
           ...this.newGameData
@@ -108,25 +108,20 @@ export default class GameController {
       })
     }
 
-  if(update['score']) {
-    switch(update['score']) {
-      case 'left':
-        if(player.paddle === 'left') player.score ++
-        break;
-      case 'right':
-        if(player.paddle === 'right') player.score ++
-        break;
-      default:
-        break;
+    if(update['score'] && update['score'] === player.paddle) {
+      await player.score ++
     }
 
-    player.save()
+    await player.save()
+    await game.save()
 
     io.emit('action', {
-      type: 'UPDATE_GAME_STATUS',
-      payload: await Game.findOneById(game.id)
+      type: 'UPDATE_GAME_SCORE',
+      payload: { 
+        id: game.id,
+        players: game.players 
+      }
     })
-  }
 
     // const winner = calculateWinner(update.board)
     // if (winner) {
@@ -140,7 +135,6 @@ export default class GameController {
     //   // game.turn = player.symbol === 'x' ? 'o' : 'x'
     // }
     // game.board = update.board
-    await game.save()
     return game
   }
 
